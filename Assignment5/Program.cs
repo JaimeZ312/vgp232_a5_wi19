@@ -1,13 +1,6 @@
 ﻿using Assignment5.Data;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Serialization;
 
 namespace Assignment5
 {
@@ -17,8 +10,8 @@ namespace Assignment5
         {
             Console.WriteLine("Welcome to Assignment 5 - Pokemon Edition");
 
-            PokemonReader reader = new PokemonReader();
-            Pokedex pokedex = reader.Load("pokemon151.xml");
+            PokemonReader pokemonReader = new PokemonReader();
+            Pokedex pokedex = pokemonReader.Load("pokemon151.xml");
 
             // List out all the pokemons loaded
             foreach (Pokemon pokemon in pokedex.Pokemons)
@@ -26,49 +19,60 @@ namespace Assignment5
                 Console.WriteLine(pokemon.Name);
             }
 
-            // TODO: Add a pokemon bag with 2 bulbsaur, 1 charlizard, 1 mew and 1 dragonite
-            // and save it out and load it back and list it out.
+            PokemonBag pokemonBag = new PokemonBag();
+            foreach (Pokemon pokemon in pokedex.Pokemons)
+            {
+                if (pokemon.Name == "Bulbasaur")
+                {
+                    pokemonBag.Pokemons.Add(pokemon.Index);
+                    pokemonBag.Pokemons.Add(pokemon.Index);
+                }
+                if (pokemon.Name == "Charizard" || pokemon.Name == "Mew" || pokemon.Name == "Dragonite")
+                {
+                    pokemonBag.Pokemons.Add(pokemon.Index);
+                }
+            }
 
-            // TODO: Add item reader and print out all the items
+            pokemonBag.SaveBag("pokemonBag.xml");
+            pokemonBag.LoadBag("pokemonBag.xml");
+
+            Pokemon poke = new Pokemon();
+            Console.WriteLine();
+            Console.WriteLine("Pokemon Pag contains:");
+            for (int i = 0; i < pokemonBag.Pokemons.Count; i++)
+            {
+                Console.WriteLine();
+                poke = pokedex.GetPokemonByIndex(pokemonBag.Pokemons[i]);
+                Console.WriteLine($"Index:{poke.Index}");
+                Console.WriteLine($"Name:{poke.Name}");
+                Console.WriteLine($"HP:{poke.HP}");
+                Console.WriteLine($"Attack:{poke.Attack}");
+                Console.WriteLine($"Defense:{poke.Defense}");
+                Console.WriteLine($"MaxCP:{poke.MaxCP}");
+                Console.WriteLine($"Type1:{poke.Type1}");
+                Console.WriteLine($"Type2:{poke.Type2}");
+            }
+
+            ItemReader itemReader = new ItemReader();
+            ItemsData itemsData = itemReader.Load("itemData.xml");
+
+            foreach (Item item in itemsData.Items)
+            {
+                Console.WriteLine(item);
+            }
 
             // TODO: hook up item data to display with the inventory
 
-            var source = new Inventory()
+            var inventoryItems = new Inventory()
             {
-                ItemToQuantity =
-                    new Dictionary<object, object> { { "Poke ball", 10 }, { "Potion", 10 } }
+                ItemToQuantity = new Dictionary<object, object> { { "Poke ball", 10 }, { "Potion", 10 } }
             };
 
-            // TODO: move this into a inventory with a serialize and deserialize function.
             string inventoryFile = "inventory.xml";
-            using (var writer = XmlWriter.Create(inventoryFile))
-                (new XmlSerializer(typeof(Inventory))).Serialize(writer, source);
+            inventoryItems.Serialize(inventoryFile, inventoryItems);
+            inventoryItems = inventoryItems.Deserialize(inventoryFile);
 
-            using (var reader = new StreamReader(inventoryFile))
-            {
-                var serializer = new XmlSerializer(typeof(Inventory));
-                try
-                {
-                    Inventory inventory = serializer.Deserialize(reader) as Inventory;
-                    if (inventory != null)
-                    {
-                        foreach (var item in inventory.ItemToQuantity)
-                        {
-                            Console.WriteLine("Item: {0} Quantity: {1}", item.Key, item.Value);
-                        }
-                    }
-                }
-
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Cannot load {0} due to the following {1}", 
-                        inventoryFile, ex.Message);
-                }
-
-            }
-
-
-            Console.ReadKey();
+            Console.ReadLine();
         }
     }
 }

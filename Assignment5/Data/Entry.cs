@@ -14,7 +14,6 @@ namespace Assignment5.Data
         public Entry()
         {
             // TODO:
-
         }
 
         public Entry(object key, object value)
